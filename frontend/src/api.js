@@ -53,6 +53,7 @@ export const api = {
   audit: (search = '', outcome = '') =>
     jget(`/audit?search=${encodeURIComponent(search)}&outcome=${encodeURIComponent(outcome)}`),
   dashboard: () => jget('/dashboard'),
+  adoption: () => jget('/adoption'),
   interaction: (id) => jget('/interaction/' + encodeURIComponent(id)),
   download: downloadExport,
   setPassword,

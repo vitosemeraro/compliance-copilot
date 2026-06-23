@@ -26,6 +26,12 @@ export const IconDash = ({ stroke = '#9A98A8', size = 17 }) => (
     <path d="M3 13h8V3H3v10zm10 8h8V3h-8v18zM3 21h8v-6H3v6z" stroke={stroke} strokeWidth="1.7" />
   </svg>
 )
+export const IconAdoption = ({ stroke = '#9A98A8', size = 17 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
+    <path d="M17 20h5v-2a3 3 0 00-3-3M9 20H2v-2a3 3 0 013-3h6a3 3 0 013 3v2H9zm0-9a3 3 0 100-6 3 3 0 000 6zm8 0a3 3 0 100-6" stroke={stroke} strokeWidth="1.6" />
+    <path d="M3 13l3-3 3 2 4-5" stroke={stroke} strokeWidth="1.5" opacity="0" />
+  </svg>
+)
 export const IconStar = ({ stroke = '#2563EB', size = 13 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
     <path d="M12 3l1.9 4.6L19 9l-3.5 3.6L16.5 18 12 15.4 7.5 18l1-5.4L5 9l5.1-1.4L12 3z" stroke={stroke} strokeWidth="1.6" />

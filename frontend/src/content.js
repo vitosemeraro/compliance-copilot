@@ -160,6 +160,14 @@ export const DOCS = {
       'Andamento domande: numero di domande registrate per mese (asse verticale = conteggio mensile, con base a 0; etichette Y a sinistra), sugli ultimi 12 mesi.',
       'Tutti i numeri sono calcolati live dai dati di sessione/demo: non sono valori fissi.',
     ] },
+    { h: 'Dashboard Adoption-health (nel tempo)', p: [
+      'Lente complementare ai KPI di business: non "quanto risponde bene il tool" ma "quanto e come viene adottato".',
+      'Utenti attivi (MAU) nel tempo e retention a 30/60/90 giorni (% di nuovi utenti ancora attivi dopo N giorni dal primo accesso).',
+      'Funnel di attivazione: Onboardati → 1ª domanda → fonte consultata → validazione. Lo stadio con il calo maggiore evidenzia dove gli utenti si bloccano.',
+      'Cohort retention: per ogni coorte di iscrizione, la % di utenti ancora attivi mese per mese (heatmap).',
+      'Segmenti utenti (power / regolari / occasionali / dormienti), punti di frizione (chiedono ma non validano, onboarding senza domande, inattivi >30g) e adozione per team.',
+      'Dati utente SINTETICI a scopo dimostrativo: mostrano il pattern di misurazione dell’adozione, non persone reali.',
+    ] },
     { h: 'Nota sui dati', p: [
       'Il corpus è pubblico + sintetico. Nessun dato reale di clienti Prima. La POC dimostra il pattern: con i documenti interni, in sicurezza, il comportamento è lo stesso.',
     ] },
@@ -216,6 +224,14 @@ export const DOCS = {
       'Corpus gaps = questions “without an adequate answer” (out-of-corpus or confidence < 60), aggregated by text with their frequency: the roadmap of what to add.',
       'Question volume: number of questions logged per month (vertical axis = monthly count, with a 0 baseline; Y labels on the left), over the last 12 months.',
       'All numbers are computed live from session/demo data: they are not fixed values.',
+    ] },
+    { h: 'Adoption-health dashboard (over time)', p: [
+      'A complementary lens to the business KPIs: not "how well the tool answers" but "how much and how it is adopted".',
+      'Active users (MAU) over time and 30/60/90-day retention (% of new users still active N days after first access).',
+      'Activation funnel: Onboarded → first question → source consulted → validation. The stage with the biggest drop highlights where users get stuck.',
+      'Cohort retention: for each signup cohort, the % of users still active month by month (heatmap).',
+      'User segments (power / regular / occasional / dormant), friction points (ask but don’t validate, onboarded but never asked, inactive >30d) and adoption by team.',
+      'SYNTHETIC user data for demo purposes: it shows the adoption-measurement pattern, not real people.',
     ] },
     { h: 'Note on data', p: [
       'The corpus is public + synthetic. No real Prima customer data. The POC demonstrates the pattern: with internal documents, securely, the behaviour is the same.',

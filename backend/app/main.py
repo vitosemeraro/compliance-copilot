@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from . import audit
+from . import adoption, audit
 from .config import (
     APP_PASSWORD,
     BACKEND_DIR,
@@ -185,6 +185,11 @@ async def export_audit(format: str = Query("csv", pattern="^(csv|json)$")):
 @app.get("/api/dashboard")
 async def dashboard():
     return audit.dashboard_stats()
+
+
+@app.get("/api/adoption")
+async def adoption_health():
+    return adoption.adoption_stats()
 
 
 # In produzione il backend serve anche il frontend compilato (stessa origine):

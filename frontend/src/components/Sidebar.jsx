@@ -1,4 +1,4 @@
-import { IconChat, IconAlert, IconShield, IconAudit, IconDash, IconCheck } from './icons.jsx'
+import { IconChat, IconAlert, IconShield, IconAudit, IconDash, IconAdoption, IconCheck } from './icons.jsx'
 
 const navStyle = (active) => ({
   display: 'flex', alignItems: 'center', gap: 11, width: '100%', padding: '9px 12px',
@@ -51,6 +51,7 @@ export default function Sidebar({ t, screen, onNav }) {
       <div data-tour="nav-governance" style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <NavBtn active={screen === 'audit'} onClick={() => onNav('audit')} icon={IconAudit} label={t.navAudit} />
         <NavBtn active={screen === 'dashboard'} onClick={() => onNav('dashboard')} icon={IconDash} label={t.navDashboard} />
+        <NavBtn active={screen === 'adoption'} onClick={() => onNav('adoption')} icon={IconAdoption} label={t.navAdoption} />
       </div>
 
       <div style={{

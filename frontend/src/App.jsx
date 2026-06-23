@@ -4,6 +4,7 @@ import Topbar from './components/Topbar.jsx'
 import ChatScreen from './screens/ChatScreen.jsx'
 import AuditScreen from './screens/AuditScreen.jsx'
 import DashboardScreen from './screens/DashboardScreen.jsx'
+import AdoptionScreen from './screens/AdoptionScreen.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import DocsModal from './components/DocsModal.jsx'
 import Architecture from './components/Architecture.jsx'
@@ -139,6 +140,7 @@ export default function App() {
   let content
   if (screen === 'audit') content = <AuditScreen t={t} onOpenInteraction={onOpenInteraction} />
   else if (screen === 'dashboard') content = <DashboardScreen t={t} lang={lang} />
+  else if (screen === 'adoption') content = <AdoptionScreen t={t} lang={lang} />
   else content = (
     <ChatScreen
       t={t} lang={lang} preset={preset} presetKey={presetKey}
