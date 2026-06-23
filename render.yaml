@@ -1,0 +1,17 @@
+# Blueprint Render — deploy del Compliance Copilot come web service Docker.
+# Render legge questo file e crea il servizio; imposta i secret dal dashboard.
+services:
+  - type: web
+    name: compliance-copilot
+    runtime: docker
+    plan: free            # 512MB RAM. Se va in OOM, passa a "starter" o usa Railway.
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    autoDeploy: true
+    envVars:
+      - key: ANTHROPIC_API_KEY   # la tua chiave Anthropic (secret, non committarla)
+        sync: false
+      - key: APP_PASSWORD        # password condivisa per la demo (scegline una)
+        sync: false
+      - key: CLAUDE_MODEL
+        value: claude-sonnet-4-6

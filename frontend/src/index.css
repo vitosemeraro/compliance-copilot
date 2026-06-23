@@ -1,0 +1,29 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+#root { height: 100vh; }
+body {
+  font-family: 'Geist', system-ui, sans-serif;
+  color: #1A1A2E;
+  background: #FAFAFC;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: #EFE7F7; color: #3A1466; }
+
+.cc-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.cc-scroll::-webkit-scrollbar-thumb {
+  background: #E2DEEA; border-radius: 8px;
+  border: 3px solid transparent; background-clip: content-box;
+}
+.cc-scroll::-webkit-scrollbar-thumb:hover { background: #CFC8DD; background-clip: content-box; }
+
+button { font-family: inherit; }
+input { font-family: inherit; }
+
+@keyframes cc-spin { to { transform: rotate(360deg); } }
+.cc-spinner {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid #E2DEEA; border-top-color: #5E2690;
+  animation: cc-spin .7s linear infinite;
+}
+@keyframes cc-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.cc-fade { animation: cc-fade .25s ease; }
