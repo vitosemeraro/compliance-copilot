@@ -32,7 +32,7 @@ const voteStyle = (on) => ({
   display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
 })
 
-function SourceCard({ s, active, onSelect, t }) {
+function SourceCard({ s, active, onSelect, t, innerRef }) {
   const isInternal = s.type === 'internal'
   const tagStyle = {
     fontSize: 10.5, fontWeight: 600, padding: '3px 9px', borderRadius: 999,
@@ -40,6 +40,7 @@ function SourceCard({ s, active, onSelect, t }) {
   }
   return (
     <button
+      ref={innerRef}
       onClick={onSelect}
       style={{
         textAlign: 'left', width: '100%', cursor: 'pointer', background: '#fff',
@@ -179,6 +180,7 @@ export default function ChatScreen({ t, lang, preset, presetKey, thread, setThre
   const [active, setActive] = useState({ turnId: null, n: 1 })
   const scrollRef = useRef(null)
   const turnRefs = useRef({})
+  const sourceRefs = useRef({})
   const lastQ = useRef(null)
 
   function updateTurn(id, patch) {
@@ -225,6 +227,12 @@ export default function ChatScreen({ t, lang, preset, presetKey, thread, setThre
     if (el) el.scrollTop = el.scrollHeight
   }, [thread.length, loading])
 
+  // Click su una citazione: porta in vista la fonte attiva nel pannello.
+  useEffect(() => {
+    const el = sourceRefs.current[active.n]
+    if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [active])
+
   // Apertura da audit: scorri al turno e rendilo attivo.
   useEffect(() => {
     if (!focusId) return
@@ -254,8 +262,8 @@ export default function ChatScreen({ t, lang, preset, presetKey, thread, setThre
   const guardrailActive = activeTurn?.guardrail?.triggered
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 392px', height: '100%', minHeight: 0 }}>
-      <section style={{ display: 'flex', flexDirection: 'column', minWidth: 0, borderRight: '1px solid #ECEAF1' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 392px', gridTemplateRows: 'minmax(0,1fr)', height: '100%', minHeight: 0 }}>
+      <section style={{ display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0, borderRight: '1px solid #ECEAF1' }}>
         {thread.length > 0 && (
           <div style={{ flex: 'none', display: 'flex', justifyContent: 'flex-end', padding: '10px 36px 0' }}>
             <button onClick={() => { setThread([]); setActive({ turnId: null, n: 1 }) }} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'none', border: '1px solid #ECEAF1', borderRadius: 8, padding: '5px 11px', cursor: 'pointer', color: '#6B6B80', fontSize: 12, fontWeight: 500 }}>
@@ -349,7 +357,14 @@ export default function ChatScreen({ t, lang, preset, presetKey, thread, setThre
         )}
 
         {visibleSources.map((s) => (
-          <SourceCard key={s.n} s={s} active={s.n === active.n && active.turnId === activeTurn?.id} onSelect={() => setActive({ turnId: activeTurn.id, n: s.n })} t={t} />
+          <SourceCard
+            key={s.n}
+            s={s}
+            active={s.n === active.n && active.turnId === activeTurn?.id}
+            onSelect={() => setActive({ turnId: activeTurn.id, n: s.n })}
+            innerRef={(el) => { sourceRefs.current[s.n] = el }}
+            t={t}
+          />
         ))}
 
         {activeTurn && (
