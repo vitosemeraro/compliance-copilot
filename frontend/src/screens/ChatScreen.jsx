@@ -177,6 +177,7 @@ function TurnCard({ turn, t, lang, isFirst, activeN, onCite, onReview, onVote, o
 export default function ChatScreen({ t, lang, preset, presetKey, thread, setThread, threshold, focusId, onFocusDone, onShowPool }) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [pending, setPending] = useState(null) // domanda in attesa di risposta (mostrata subito)
   const [active, setActive] = useState({ turnId: null, n: 1 })
   const scrollRef = useRef(null)
   const turnRefs = useRef({})
@@ -202,6 +203,7 @@ export default function ChatScreen({ t, lang, preset, presetKey, thread, setThre
     }
     if (!raw || loading) return
     setLoading(true)
+    setPending(raw) // mostra subito la domanda inviata
     setInput('')
     try {
       const res = await api.ask(raw, lang)
@@ -212,6 +214,7 @@ export default function ChatScreen({ t, lang, preset, presetKey, thread, setThre
       setThread((prev) => [...prev, { id: `err-${Date.now()}`, question: raw, error: String(e), segments: [], sources: [] }])
     } finally {
       setLoading(false)
+      setPending(null)
     }
   }
 
@@ -309,9 +312,12 @@ export default function ChatScreen({ t, lang, preset, presetKey, thread, setThre
             </div>
           ))}
 
-          {loading && (
-            <div className="cc-fade" style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#8C8A99', fontSize: 14 }}>
-              <span className="cc-spinner" /> {t.thinking}
+          {pending && (
+            <div className="cc-fade" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+              <div style={{ alignSelf: 'flex-end', maxWidth: '74%', background: '#1A1A2E', color: '#fff', padding: '13px 17px', borderRadius: '16px 16px 4px 16px', fontSize: 14.5, lineHeight: 1.5 }}>{pending}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#8C8A99', fontSize: 14 }}>
+                <span className="cc-spinner" /> {t.thinking}
+              </div>
             </div>
           )}
         </div>
