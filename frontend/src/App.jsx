@@ -14,6 +14,30 @@ import { pickQuestion } from './content.js'
 import { api } from './api.js'
 
 const ASSISTANT = ['chat', 'escalation', 'guardrail']
+const THREAD_KEY = 'cc_thread'
+
+// Normalizza un'interazione dell'audit nello stesso formato di una risposta /ask,
+// così può essere mostrata e revalidata nel thread.
+function rowToTurn(row, threshold) {
+  return {
+    id: row.id,
+    question: row.question,
+    lang: row.lang,
+    segments: row.answer_segments || [],
+    confidence: row.confidence,
+    threshold,
+    grounded: row.grounded,
+    out_of_corpus: row.out_of_corpus,
+    needs_review: row.needs_review,
+    guardrail: { triggered: !!row.guardrail, terms: row.guardrail_terms || [] },
+    sources: row.sources_full || [],
+    engine: row.engine,
+    rationale: row.rationale || '',
+    verdict: row.outcome || null,
+    vote: row.vote || null,
+    reopened: true,
+  }
+}
 
 const footerBtn = {
   background: 'none', border: 'none', cursor: 'pointer', color: '#7A6A92', fontSize: 11,
@@ -28,6 +52,15 @@ export default function App() {
   const [modal, setModal] = useState(null) // 'onboarding' | 'docs' | 'arch' | 'pool' | null
   const [authed, setAuthed] = useState(null) // null = verifica in corso
   const [injected, setInjected] = useState(null) // domanda inserita da pool/comando
+  const [thread, setThread] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(THREAD_KEY) || '[]') } catch { return [] }
+  })
+  const [focusId, setFocusId] = useState(null) // turno su cui posizionarsi (apertura da audit)
+
+  // Persistenza del thread: non si perde con navigazione o uscita accidentale.
+  useEffect(() => {
+    try { localStorage.setItem(THREAD_KEY, JSON.stringify(thread.slice(-20))) } catch { /* quota */ }
+  }, [thread])
 
   // Bootstrap: carica config e verifica se serve la password.
   useEffect(() => {
@@ -71,6 +104,27 @@ export default function App() {
     setModal(null)
   }
 
+  // Apertura di un'interazione dal trail: la porta nel thread (per rileggere
+  // risposta e fonti e cambiarne l'esito). Se è una riga legacy senza risposta
+  // salvata, ripropone la domanda nell'input.
+  async function onOpenInteraction(id) {
+    try {
+      const row = await api.interaction(id)
+      setScreen('chat')
+      setNavTick((n) => n + 1)
+      if (row.answer_segments && row.answer_segments.length) {
+        const turn = rowToTurn(row, cfg.confidence_threshold)
+        setInjected(null)
+        setThread((prev) => (prev.some((tt) => tt.id === turn.id)
+          ? prev.map((tt) => (tt.id === turn.id ? turn : tt))
+          : [...prev, turn]))
+        setFocusId(id)
+      } else {
+        setInjected(row.question) // legacy/seed → riproponi la domanda
+      }
+    } catch { /* 404 / rete */ }
+  }
+
   const presetKey = `${screen}-${lang}-${navTick}`
   // Cosa preriempire nell'input (mai inviata in automatico):
   //  · domanda dal pool → quella; · "Confidenza bassa" → una low; · "Guardrail" → una guardrail; · Chat → vuoto.
@@ -82,12 +136,17 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [presetKey])
 
-  const content = useMemo(() => {
-    if (screen === 'audit') return <AuditScreen t={t} />
-    if (screen === 'dashboard') return <DashboardScreen t={t} lang={lang} />
-    return <ChatScreen t={t} lang={lang} preset={preset} presetKey={presetKey} onShowPool={() => setModal('pool')} />
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen, lang, presetKey])
+  let content
+  if (screen === 'audit') content = <AuditScreen t={t} onOpenInteraction={onOpenInteraction} />
+  else if (screen === 'dashboard') content = <DashboardScreen t={t} lang={lang} />
+  else content = (
+    <ChatScreen
+      t={t} lang={lang} preset={preset} presetKey={presetKey}
+      thread={thread} setThread={setThread} threshold={cfg.confidence_threshold}
+      focusId={focusId} onFocusDone={() => setFocusId(null)}
+      onShowPool={() => setModal('pool')}
+    />
+  )
 
   if (authed === null) {
     return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="cc-spinner" /></div>

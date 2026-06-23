@@ -95,6 +95,10 @@ async def answer(
         guardrail=grd.triggered,
         sources=cited_sources,
         engine=result["engine"],
+        answer_segments=result["segments"],
+        sources_full=sources,
+        guardrail_terms=grd.terms,
+        rationale=result.get("rationale", ""),
     )
 
     return {

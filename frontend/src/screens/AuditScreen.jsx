@@ -35,7 +35,7 @@ const chipFilter = (active) => ({
   fontSize: 13, color: active ? '#5E2690' : '#5C5A6B', cursor: 'pointer', fontWeight: 500,
 })
 
-export default function AuditScreen({ t }) {
+export default function AuditScreen({ t, onOpenInteraction }) {
   const [data, setData] = useState({ rows: [], count: 0, total: 0, chain_valid: true })
   const [search, setSearch] = useState('')
   const [outcome, setOutcome] = useState('')
@@ -75,6 +75,13 @@ export default function AuditScreen({ t }) {
         </div>
       </div>
 
+      {onOpenInteraction && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: '#9A98A8', marginBottom: 10 }}>
+          <IconSearch stroke="#B7B4C2" size={13} />
+          <span>{t.auditOpenHint}</span>
+        </div>
+      )}
+
       <div style={{ background: '#fff', border: '1px solid #ECEAF1', borderRadius: 14, overflow: 'hidden', boxShadow: '0 4px 18px rgba(46,26,80,.04)' }}>
         <div style={{ display: 'grid', gridTemplateColumns: GRID, padding: '13px 20px', background: '#FBFAFD', borderBottom: '1px solid #EEEBF2', fontSize: 10.5, fontWeight: 600, letterSpacing: '.06em', color: '#A7A4B5' }}>
           <div>{t.colDate}</div><div>{t.colUser}</div><div>{t.colQuestion}</div>
@@ -86,7 +93,13 @@ export default function AuditScreen({ t }) {
         {data.rows.map((r) => {
           const oc = outcomeChip(r, t)
           return (
-            <div key={r.id} style={{ display: 'grid', gridTemplateColumns: GRID, padding: '15px 20px', borderBottom: '1px solid #F4F2F7', alignItems: 'center', fontSize: 13 }}>
+            <div
+              key={r.id}
+              onClick={() => onOpenInteraction && onOpenInteraction(r.id)}
+              style={{ display: 'grid', gridTemplateColumns: GRID, padding: '15px 20px', borderBottom: '1px solid #F4F2F7', alignItems: 'center', fontSize: 13, cursor: onOpenInteraction ? 'pointer' : 'default' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#FCFBFE' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+            >
               <div style={{ color: '#8C8A99', fontFamily: "'Geist Mono',monospace", fontSize: 11.5 }}>{fmtDate(r.ts)}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
                 <span style={{ width: 24, height: 24, borderRadius: '50%', background: '#EFE7F7', color: '#5E2690', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>{initials(r.user)}</span>

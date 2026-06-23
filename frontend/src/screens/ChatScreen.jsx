@@ -60,7 +60,7 @@ function SourceCard({ s, active, onSelect, t }) {
       </div>
       <div style={{ fontSize: 13.5, fontWeight: 600, color: '#1A1A2E', lineHeight: 1.35 }}>{s.doc_title}</div>
       <div style={{ fontSize: 11.5, color: '#8C8A99', marginTop: 2 }}>{s.section}</div>
-      {active && (
+      {active && s.highlight && (
         <div className="cc-fade" style={{
           marginTop: 11, fontFamily: "'Geist Mono',monospace", fontSize: 11.5, lineHeight: 1.65, color: '#5C5A6B',
           background: '#fff', border: '1px solid #EEE9F4', borderRadius: 9, padding: '11px 12px',
@@ -74,16 +74,116 @@ function SourceCard({ s, active, onSelect, t }) {
   )
 }
 
-export default function ChatScreen({ t, lang, preset, presetKey, onShowPool }) {
+function TurnCard({ turn, t, lang, isFirst, activeN, onCite, onReview, onVote, onEscalate }) {
+  const needsReview = turn.needs_review
+  const guardrail = turn.guardrail?.triggered
+  const confColor = needsReview ? ['#FEF3C7', '#B45309'] : ['#DCFCE7', '#15803D']
+  return (
+    <>
+      <div style={{ alignSelf: 'flex-end', maxWidth: '74%', background: '#1A1A2E', color: '#fff', padding: '13px 17px', borderRadius: '16px 16px 4px 16px', fontSize: 14.5, lineHeight: 1.5 }}>{turn.question}</div>
+
+      <div data-tour={isFirst ? 'answer' : undefined} className="cc-fade" style={{ background: '#fff', border: `1px solid ${needsReview ? '#F1E4C8' : '#ECEAF1'}`, borderRadius: 16, boxShadow: '0 6px 24px rgba(46,26,80,.06)', overflow: 'hidden' }}>
+        {guardrail && (
+          <div style={{ display: 'flex', gap: 13, padding: '16px 20px', background: 'linear-gradient(180deg,#FBF5FF,#FFFBF2)', borderBottom: '1px solid #F0E6D8' }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, flex: 'none', background: 'linear-gradient(135deg,#7B30B0,#5E2690)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 3px 9px rgba(94,38,144,.25)' }}>
+              <IconShieldCheck />
+            </div>
+            <div>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: '#5E2690', marginBottom: 3 }}>{t.guardrailTitle}</div>
+              <div style={{ fontSize: 13, lineHeight: 1.62, color: '#6A5A4B' }}>{t.guardrailBody}</div>
+              {turn.guardrail.terms?.length > 0 && (
+                <div style={{ marginTop: 6, fontSize: 11.5, color: '#9A7BBE', fontWeight: 500 }}>
+                  {lang === 'it' ? 'Termini rilevati' : 'Detected terms'}: {turn.guardrail.terms.join(', ')}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '15px 20px', borderBottom: '1px solid #F2F0F6', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#DBEAFE', color: '#1E50C8', padding: '5px 11px', borderRadius: 999, fontSize: 11.5, fontWeight: 500, whiteSpace: 'nowrap', flex: 'none' }}>
+            <IconStar /> {t.aiBadge}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {turn.reopened && (
+              <span style={{ fontSize: 10.5, fontWeight: 600, color: '#5E2690', background: '#EFE7F7', padding: '4px 9px', borderRadius: 999 }}>{t.reopened}</span>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, background: confColor[0], color: confColor[1], padding: '5px 11px', borderRadius: 999, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: confColor[1] }} />
+              {t.confidence} {turn.confidence}%{needsReview ? ` · ${t.needsReview}` : ''}
+            </div>
+          </div>
+        </div>
+
+        {needsReview && (
+          <div style={{ margin: '16px 20px 0', display: 'flex', gap: 11, background: '#FFFBF0', border: '1px solid #F4E6C2', borderRadius: 12, padding: '13px 15px' }}>
+            <IconInfo stroke="#B45309" size={20} />
+            <div>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: '#92500A', marginBottom: 2 }}>{t.escBannerTitle}</div>
+              <div style={{ fontSize: 13, lineHeight: 1.6, color: '#8A6516' }}>{t.escBannerBody}</div>
+            </div>
+          </div>
+        )}
+
+        <div style={{ padding: '18px 22px 6px', fontSize: 15, lineHeight: 1.72, color: '#26243A' }}>
+          {turn.segments.map((seg, i) => (
+            <span key={i}>
+              {seg.text}
+              {seg.citation != null && (
+                <button onClick={() => onCite(seg.citation)} style={chipStyle(seg.citation === activeN)}>{seg.citation}</button>
+              )}{' '}
+            </span>
+          ))}
+        </div>
+
+        <div data-tour={isFirst ? 'hitl' : undefined} style={{ margin: '14px 22px 0', padding: '14px 0 18px', borderTop: '1px solid #F2F0F6', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '.07em', color: '#A7A4B5', marginRight: 2 }}>{t.humanLabel}</span>
+            <button onClick={() => onReview('validata')} style={verdictBtn('validata', turn.verdict === 'validata')}><IconCheck stroke="currentColor" />{t.btnValida}</button>
+            <button onClick={() => onReview('correggi')} style={verdictBtn('correggi', turn.verdict === 'correggi')}>{t.btnCorreggi}</button>
+            <button onClick={() => onReview('scarta')} style={verdictBtn('scarta', turn.verdict === 'scarta')}>{t.btnScarta}</button>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button onClick={() => onVote('up')} style={voteStyle(turn.vote === 'up')}><IconThumbUp /></button>
+            <button onClick={() => onVote('down')} style={voteStyle(turn.vote === 'down')}><IconThumbDown /></button>
+          </div>
+        </div>
+
+        {turn.verdict && (
+          <div className="cc-fade" style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '0 22px 18px', padding: '11px 14px', borderRadius: 10, background: verdictTone[turn.verdict][0], color: verdictTone[turn.verdict][1], fontSize: 13, fontWeight: 500 }}>
+            <IconCheck stroke="currentColor" />
+            <span>{turn.verdict === 'validata' ? t.vValida : turn.verdict === 'correggi' ? t.vCorreggi : t.vScarta}</span>
+          </div>
+        )}
+
+        {needsReview && (
+          <div style={{ margin: '0 22px 18px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <button onClick={onEscalate} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg,#7B30B0,#5E2690)', color: '#fff', fontSize: 13.5, fontWeight: 600, boxShadow: '0 3px 11px rgba(94,38,144,.3)' }}>
+              <IconUp /> {t.btnEscalate}
+            </button>
+            {turn.escSent && (
+              <div className="cc-fade" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#EFE7F7', color: '#5E2690', padding: '9px 13px', borderRadius: 9, fontSize: 12.5, fontWeight: 600 }}>
+                <IconCheck stroke="currentColor" size={14} />{t.escSentMsg}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
+export default function ChatScreen({ t, lang, preset, presetKey, thread, setThread, threshold, focusId, onFocusDone, onShowPool }) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [ans, setAns] = useState(null)
-  const [active, setActive] = useState(1)
-  const [verdict, setVerdict] = useState(null)
-  const [vote, setVote] = useState(null)
-  const [escSent, setEscSent] = useState(false)
+  const [active, setActive] = useState({ turnId: null, n: 1 })
   const scrollRef = useRef(null)
+  const turnRefs = useRef({})
   const lastQ = useRef(null)
+
+  function updateTurn(id, patch) {
+    setThread((prev) => prev.map((tt) => (tt.id === id ? { ...tt, ...patch } : tt)))
+  }
 
   function fillRandom(category) {
     const q = pickQuestion(lang, category, lastQ.current)
@@ -93,61 +193,80 @@ export default function ChatScreen({ t, lang, preset, presetKey, onShowPool }) {
 
   async function submit(q) {
     const raw = (q ?? input).trim()
-    // Comandi slash: inseriscono una domanda di esempio (da inviare), niente attesa.
     if (q == null && raw.toLowerCase().startsWith('/chat')) {
       const arg = raw.slice(5).trim().toLowerCase()
-      const category = arg === 'low' ? 'low' : arg === 'guardrail' ? 'guardrail' : 'random'
-      fillRandom(category)
+      fillRandom(arg === 'low' ? 'low' : arg === 'guardrail' ? 'guardrail' : 'random')
       return
     }
-    const question = raw
-    if (!question || loading) return
-    setLoading(true); setAns(null); setVerdict(null); setVote(null); setEscSent(false)
+    if (!raw || loading) return
+    setLoading(true)
+    setInput('')
     try {
-      const res = await api.ask(question, lang)
-      setAns(res)
-      setActive(res.sources.find((s) => s.cited)?.n ?? 1)
+      const res = await api.ask(raw, lang)
+      const turn = { ...res, verdict: null, vote: null, escSent: false }
+      setThread((prev) => [...prev, turn])
+      setActive({ turnId: res.id, n: res.sources.find((s) => s.cited)?.n ?? 1 })
     } catch (e) {
-      setAns({ error: String(e) })
+      setThread((prev) => [...prev, { id: `err-${Date.now()}`, question: raw, error: String(e), segments: [], sources: [] }])
     } finally {
       setLoading(false)
-      setInput('')
     }
   }
 
-  // Ogni accesso a una schermata assistente parte pulito: nessuna attesa.
-  // Le voci "Confidenza bassa" / "Guardrail" preriempiono l'input (senza inviare).
+  // Cambio schermata assistente: preriempi l'input, NON toccare il thread.
   useEffect(() => {
-    setAns(null); setVerdict(null); setVote(null); setEscSent(false)
     setInput(preset || '')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [presetKey])
 
-  async function doReview(kind) {
-    setVerdict(kind)
-    if (ans?.id) { try { await api.review(ans.id, kind) } catch {} }
+  // Auto-scroll in fondo quando arriva un turno o parte il caricamento.
+  useEffect(() => {
+    const el = scrollRef.current
+    if (el) el.scrollTop = el.scrollHeight
+  }, [thread.length, loading])
+
+  // Apertura da audit: scorri al turno e rendilo attivo.
+  useEffect(() => {
+    if (!focusId) return
+    const node = turnRefs.current[focusId]
+    const turn = thread.find((tt) => tt.id === focusId)
+    if (turn) setActive({ turnId: focusId, n: turn.sources?.find((s) => s.cited)?.n ?? 1 })
+    if (node) node.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    onFocusDone && onFocusDone()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusId])
+
+  async function doReview(id, kind) {
+    updateTurn(id, { verdict: kind })
+    try { await api.review(id, kind) } catch { /* ignore */ }
   }
-  async function doVote(v) {
-    const next = vote === v ? null : v
-    setVote(next)
-    if (next && ans?.id) { try { await api.feedback(ans.id, next) } catch {} }
+  async function doVote(id, v) {
+    const turn = thread.find((tt) => tt.id === id)
+    const next = turn?.vote === v ? null : v
+    updateTurn(id, { vote: next })
+    if (next) { try { await api.feedback(id, next) } catch { /* ignore */ } }
   }
 
-  const needsReview = ans && !ans.error && ans.needs_review
-  const guardrail = ans && !ans.error && ans.guardrail?.triggered
-  const confColor = needsReview ? ['#FEF3C7', '#B45309'] : ['#DCFCE7', '#15803D']
-
-  // Mostriamo nel pannello solo le fonti effettivamente citate nella risposta:
-  // le altre sono state consultate dal retrieval ma non ancorano alcuna affermazione.
-  const cited = ans && !ans.error ? ans.sources.filter((s) => s.cited) : []
-  const visibleSources = ans?.out_of_corpus ? [] : (cited.length ? cited : (ans?.sources ?? []))
+  // Turno attivo per il pannello fonti (default: ultimo).
+  const activeTurn = thread.find((tt) => tt.id === active.turnId) || thread[thread.length - 1]
+  const cited = activeTurn && !activeTurn.error ? (activeTurn.sources || []).filter((s) => s.cited) : []
+  const visibleSources = activeTurn?.out_of_corpus ? [] : (cited.length ? cited : (activeTurn?.sources || []))
+  const guardrailActive = activeTurn?.guardrail?.triggered
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 392px', height: '100%', minHeight: 0 }}>
-      {/* conversazione */}
       <section style={{ display: 'flex', flexDirection: 'column', minWidth: 0, borderRight: '1px solid #ECEAF1' }}>
-        <div ref={scrollRef} className="cc-scroll" style={{ flex: 1, overflowY: 'auto', padding: '30px 36px 16px', display: 'flex', flexDirection: 'column', gap: 22 }}>
-          {!ans && !loading && (
+        {thread.length > 0 && (
+          <div style={{ flex: 'none', display: 'flex', justifyContent: 'flex-end', padding: '10px 36px 0' }}>
+            <button onClick={() => { setThread([]); setActive({ turnId: null, n: 1 }) }} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'none', border: '1px solid #ECEAF1', borderRadius: 8, padding: '5px 11px', cursor: 'pointer', color: '#6B6B80', fontSize: 12, fontWeight: 500 }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#6B6B80" strokeWidth="1.8" strokeLinecap="round" /></svg>
+              {t.newChat}
+            </button>
+          </div>
+        )}
+
+        <div ref={scrollRef} className="cc-scroll" style={{ flex: 1, overflowY: 'auto', padding: '24px 36px 16px', display: 'flex', flexDirection: 'column', gap: 22 }}>
+          {thread.length === 0 && !loading && (
             <div style={{ margin: 'auto', textAlign: 'center', color: '#9A98A8', maxWidth: 420, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div style={{ width: 52, height: 52, borderRadius: 14, background: 'linear-gradient(135deg,#7B30B0,#5E2690)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 16px rgba(94,38,144,.28)', marginBottom: 16 }}>
                 <IconShieldCheck size={24} />
@@ -162,112 +281,33 @@ export default function ChatScreen({ t, lang, preset, presetKey, onShowPool }) {
             </div>
           )}
 
-          {ans?.question && (
-            <div style={{ alignSelf: 'flex-end', maxWidth: '74%', background: '#1A1A2E', color: '#fff', padding: '13px 17px', borderRadius: '16px 16px 4px 16px', fontSize: 14.5, lineHeight: 1.5 }}>{ans.question}</div>
-          )}
+          {thread.map((turn, i) => (
+            <div key={turn.id} ref={(el) => { turnRefs.current[turn.id] = el }} style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+              {turn.error ? (
+                <>
+                  <div style={{ alignSelf: 'flex-end', maxWidth: '74%', background: '#1A1A2E', color: '#fff', padding: '13px 17px', borderRadius: '16px 16px 4px 16px', fontSize: 14.5 }}>{turn.question}</div>
+                  <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '12px 16px', borderRadius: 12, fontSize: 13.5 }}>Errore: {turn.error}</div>
+                </>
+              ) : (
+                <TurnCard
+                  turn={turn} t={t} lang={lang} isFirst={i === 0}
+                  activeN={active.turnId === turn.id ? active.n : null}
+                  onCite={(n) => setActive({ turnId: turn.id, n })}
+                  onReview={(k) => doReview(turn.id, k)}
+                  onVote={(v) => doVote(turn.id, v)}
+                  onEscalate={() => updateTurn(turn.id, { escSent: true })}
+                />
+              )}
+            </div>
+          ))}
 
           {loading && (
             <div className="cc-fade" style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#8C8A99', fontSize: 14 }}>
               <span className="cc-spinner" /> {t.thinking}
             </div>
           )}
-
-          {ans?.error && (
-            <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '12px 16px', borderRadius: 12, fontSize: 13.5 }}>Errore: {ans.error}</div>
-          )}
-
-          {ans && !ans.error && (
-            <div data-tour="answer" className="cc-fade" style={{ background: '#fff', border: `1px solid ${needsReview ? '#F1E4C8' : '#ECEAF1'}`, borderRadius: 16, boxShadow: '0 6px 24px rgba(46,26,80,.06)', overflow: 'hidden' }}>
-              {/* guardrail banner */}
-              {guardrail && (
-                <div style={{ display: 'flex', gap: 13, padding: '16px 20px', background: 'linear-gradient(180deg,#FBF5FF,#FFFBF2)', borderBottom: '1px solid #F0E6D8' }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, flex: 'none', background: 'linear-gradient(135deg,#7B30B0,#5E2690)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 3px 9px rgba(94,38,144,.25)' }}>
-                    <IconShieldCheck />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 13.5, fontWeight: 600, color: '#5E2690', marginBottom: 3 }}>{t.guardrailTitle}</div>
-                    <div style={{ fontSize: 13, lineHeight: 1.62, color: '#6A5A4B' }}>{t.guardrailBody}</div>
-                    <div style={{ marginTop: 6, fontSize: 11.5, color: '#9A7BBE', fontWeight: 500 }}>
-                      {lang === 'it' ? 'Termini rilevati' : 'Detected terms'}: {ans.guardrail.terms.join(', ')}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* header badges */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '15px 20px', borderBottom: '1px solid #F2F0F6' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#DBEAFE', color: '#1E50C8', padding: '5px 11px', borderRadius: 999, fontSize: 11.5, fontWeight: 500, whiteSpace: 'nowrap', flex: 'none' }}>
-                  <IconStar /> {t.aiBadge}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 7, background: confColor[0], color: confColor[1], padding: '5px 11px', borderRadius: 999, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', flex: 'none' }}>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: confColor[1] }} />
-                  {t.confidence} {ans.confidence}%{needsReview ? ` · ${t.needsReview}` : ''}
-                </div>
-              </div>
-
-              {/* escalation banner */}
-              {needsReview && (
-                <div style={{ margin: '16px 20px 0', display: 'flex', gap: 11, background: '#FFFBF0', border: '1px solid #F4E6C2', borderRadius: 12, padding: '13px 15px' }}>
-                  <IconInfo stroke="#B45309" size={20} />
-                  <div>
-                    <div style={{ fontSize: 13.5, fontWeight: 600, color: '#92500A', marginBottom: 2 }}>{t.escBannerTitle}</div>
-                    <div style={{ fontSize: 13, lineHeight: 1.6, color: '#8A6516' }}>{t.escBannerBody}</div>
-                  </div>
-                </div>
-              )}
-
-              {/* answer text with citations */}
-              <div style={{ padding: '18px 22px 6px', fontSize: 15, lineHeight: 1.72, color: '#26243A' }}>
-                {ans.segments.map((seg, i) => (
-                  <span key={i}>
-                    {seg.text}
-                    {seg.citation != null && (
-                      <button onClick={() => setActive(seg.citation)} style={chipStyle(seg.citation === active)}>{seg.citation}</button>
-                    )}{' '}
-                  </span>
-                ))}
-              </div>
-
-              {/* HITL + votes */}
-              <div data-tour="hitl" style={{ margin: '14px 22px 0', padding: '14px 0 18px', borderTop: '1px solid #F2F0F6', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '.07em', color: '#A7A4B5', marginRight: 2 }}>{t.humanLabel}</span>
-                  <button onClick={() => doReview('validata')} style={verdictBtn('validata', verdict === 'validata')}><IconCheck stroke="currentColor" />{t.btnValida}</button>
-                  <button onClick={() => doReview('correggi')} style={verdictBtn('correggi', verdict === 'correggi')}>{t.btnCorreggi}</button>
-                  <button onClick={() => doReview('scarta')} style={verdictBtn('scarta', verdict === 'scarta')}>{t.btnScarta}</button>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <button onClick={() => doVote('up')} style={voteStyle(vote === 'up')}><IconThumbUp /></button>
-                  <button onClick={() => doVote('down')} style={voteStyle(vote === 'down')}><IconThumbDown /></button>
-                </div>
-              </div>
-
-              {/* verdict bar */}
-              {verdict && (
-                <div className="cc-fade" style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '0 22px 18px', padding: '11px 14px', borderRadius: 10, background: verdictTone[verdict][0], color: verdictTone[verdict][1], fontSize: 13, fontWeight: 500 }}>
-                  <IconCheck stroke="currentColor" />
-                  <span>{verdict === 'validata' ? t.vValida : verdict === 'correggi' ? t.vCorreggi : t.vScarta}</span>
-                </div>
-              )}
-
-              {/* escalate action when needs review */}
-              {needsReview && (
-                <div style={{ margin: '0 22px 18px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  <button onClick={() => setEscSent(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg,#7B30B0,#5E2690)', color: '#fff', fontSize: 13.5, fontWeight: 600, boxShadow: '0 3px 11px rgba(94,38,144,.3)' }}>
-                    <IconUp /> {t.btnEscalate}
-                  </button>
-                  {escSent && (
-                    <div className="cc-fade" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#EFE7F7', color: '#5E2690', padding: '9px 13px', borderRadius: 9, fontSize: 12.5, fontWeight: 600 }}>
-                      <IconCheck stroke="currentColor" size={14} />{t.escSentMsg}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
-        {/* input */}
         <div style={{ flex: 'none', padding: '16px 36px 22px', borderTop: '1px solid #ECEAF1', background: '#fff' }}>
           <div data-tour="input" style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F7F5FA', border: '1px solid #ECEAF1', borderRadius: 13, padding: '8px 8px 8px 16px' }}>
             <input
@@ -291,14 +331,17 @@ export default function ChatScreen({ t, lang, preset, presetKey, onShowPool }) {
         </div>
       </section>
 
-      {/* sources panel */}
       <aside data-tour="sources" className="cc-scroll" style={{ background: '#FBFAFD', overflowY: 'auto', padding: '24px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: '.06em', color: '#1A1A2E', textTransform: 'uppercase' }}>{t.sourcesTitle}</div>
           <div style={{ fontSize: 12, color: '#9A98A8' }}>{visibleSources.length}</div>
         </div>
 
-        {ans?.out_of_corpus && (
+        {!activeTurn && (
+          <div style={{ fontSize: 12.5, color: '#9A98A8', lineHeight: 1.55, padding: '0 4px' }}>{t.sourcesHint}</div>
+        )}
+
+        {activeTurn?.out_of_corpus && (
           <div style={{ display: 'flex', gap: 9, background: '#FFF7F7', border: '1px solid #F4C2C2', borderRadius: 11, padding: '12px 13px' }}>
             <IconAlert stroke="#B91C1C" size={17} />
             <div style={{ fontSize: 12, lineHeight: 1.55, color: '#9B2C2C' }}>{t.notInSources}. {t.escPartialCoverage}</div>
@@ -306,13 +349,15 @@ export default function ChatScreen({ t, lang, preset, presetKey, onShowPool }) {
         )}
 
         {visibleSources.map((s) => (
-          <SourceCard key={s.n} s={s} active={s.n === active} onSelect={() => setActive(s.n)} t={t} />
+          <SourceCard key={s.n} s={s} active={s.n === active.n && active.turnId === activeTurn?.id} onSelect={() => setActive({ turnId: activeTurn.id, n: s.n })} t={t} />
         ))}
 
-        <div style={{ marginTop: 4, display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 11.5, color: '#9A98A8', lineHeight: 1.5, padding: '0 4px' }}>
-          <IconInfo />
-          <span>{guardrail ? t.guardrailHint : t.sourcesHint}</span>
-        </div>
+        {activeTurn && (
+          <div style={{ marginTop: 4, display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 11.5, color: '#9A98A8', lineHeight: 1.5, padding: '0 4px' }}>
+            <IconInfo />
+            <span>{guardrailActive ? t.guardrailHint : t.sourcesHint}</span>
+          </div>
+        )}
       </aside>
     </div>
   )

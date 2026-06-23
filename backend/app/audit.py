@@ -71,9 +71,13 @@ def log_interaction(
     sources: list[dict[str, Any]],
     engine: str,
     ts: str | None = None,
+    answer_segments: list[dict[str, Any]] | None = None,
+    sources_full: list[dict[str, Any]] | None = None,
+    guardrail_terms: list[str] | None = None,
+    rationale: str = "",
 ) -> str:
     interaction_id = uuid.uuid4().hex[:12]
-    _append({
+    event: dict[str, Any] = {
         "event_type": "interaction",
         "id": interaction_id,
         "ts": ts or _now_iso(),
@@ -87,7 +91,18 @@ def log_interaction(
         "guardrail": guardrail,
         "sources": sources,
         "engine": engine,
-    })
+    }
+    # Payload completo della risposta: consente di riaprire fedelmente
+    # l'interazione dal trail (riconsultare fonti, snippet, citazioni).
+    if answer_segments is not None:
+        event["answer_segments"] = answer_segments
+    if sources_full is not None:
+        event["sources_full"] = sources_full
+    if guardrail_terms:
+        event["guardrail_terms"] = guardrail_terms
+    if rationale:
+        event["rationale"] = rationale
+    _append(event)
     return interaction_id
 
 
@@ -161,6 +176,23 @@ def reconstruct_rows() -> list[dict[str, Any]]:
     rows = [interactions[i] for i in order]
     rows.sort(key=lambda r: r["ts"], reverse=True)
     return rows
+
+
+# Campi "pesanti" (risposta completa) da escludere dalla lista tabellare.
+_HEAVY = ("answer_segments", "sources_full")
+
+
+def rows_light() -> list[dict[str, Any]]:
+    """Righe per la tabella audit, senza il payload pesante della risposta."""
+    return [{k: v for k, v in r.items() if k not in _HEAVY} for r in reconstruct_rows()]
+
+
+def get_interaction(interaction_id: str) -> dict[str, Any] | None:
+    """Interazione completa (risposta + fonti + esito) per riaprirla dal trail."""
+    for r in reconstruct_rows():
+        if r["id"] == interaction_id:
+            return r
+    return None
 
 
 # --- Statistiche per la dashboard ----------------------------------------

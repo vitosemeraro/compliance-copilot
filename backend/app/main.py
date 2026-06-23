@@ -130,7 +130,8 @@ async def get_audit(
     search: str = "",
     outcome: str = Query("", description="validata|correggi|scarta|rev"),
 ):
-    rows = audit.reconstruct_rows()
+    rows = audit.rows_light()
+    total = len(rows)
     if search:
         s = search.lower()
         rows = [r for r in rows if s in r["question"].lower() or s in r["user"].lower()]
@@ -142,9 +143,17 @@ async def get_audit(
     return {
         "rows": rows,
         "count": len(rows),
-        "total": len(audit.reconstruct_rows()),
+        "total": total,
         "chain_valid": audit.verify_chain(),
     }
+
+
+@app.get("/api/interaction/{interaction_id}")
+async def interaction(interaction_id: str):
+    row = audit.get_interaction(interaction_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Interazione non trovata")
+    return row
 
 
 @app.get("/api/audit/export")
