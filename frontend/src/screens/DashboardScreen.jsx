@@ -27,10 +27,11 @@ export default function DashboardScreen({ t, lang }) {
   // line chart geometry
   const W = 600, H = 158, P = 6
   const vals = d.trend.map((x) => x.count)
-  const max = Math.max(...vals, 1), min = Math.min(...vals, 0)
+  const max = Math.max(...vals, 1)
+  // baseline a 0: l'altezza del punto è proporzionale al volume assoluto.
   const pts = vals.map((v, i) => {
     const x = P + (i * (W - 2 * P)) / Math.max(1, vals.length - 1)
-    const y = (H - 14) - ((v - min) / Math.max(1, max - min)) * (H - 28)
+    const y = (H - 14) - (v / max) * (H - 28)
     return `${x.toFixed(1)},${y.toFixed(1)}`
   })
   const linePoints = pts.join(' ')
@@ -54,25 +55,35 @@ export default function DashboardScreen({ t, lang }) {
       {/* charts row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.55fr) minmax(0,1fr)', gap: 16, marginBottom: 20 }}>
         <div style={kpiCard}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: '#1A1A2E' }}>{t.chartTrend}</div>
-            <div style={{ fontSize: 11.5, color: '#9A98A8' }}>{t.chartTrendSub}</div>
+            <div style={{ fontSize: 11.5, color: '#9A98A8' }}>{t.trendY} · {t.chartTrendSub}</div>
           </div>
-          <svg viewBox="0 0 600 158" preserveAspectRatio="none" style={{ width: '100%', height: 158, display: 'block' }}>
-            <defs>
-              <linearGradient id="ccArea" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="#7B30B0" stopOpacity="0.18" />
-                <stop offset="1" stopColor="#7B30B0" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            <line x1="0" y1="40" x2="600" y2="40" stroke="#F2F0F6" />
-            <line x1="0" y1="80" x2="600" y2="80" stroke="#F2F0F6" />
-            <line x1="0" y1="120" x2="600" y2="120" stroke="#F2F0F6" />
-            <polygon points={lineArea} fill="url(#ccArea)" />
-            <polyline points={linePoints} fill="none" stroke="#7B30B0" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 10.5, color: '#A7A4B5', fontFamily: "'Geist Mono',monospace" }}>
-            {monthLabels.map((m, i) => <span key={i}>{m}</span>)}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {/* asse Y: valori di riferimento allineati alle gridline */}
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: 158, paddingBottom: 16, fontSize: 9.5, color: '#A7A4B5', fontFamily: "'Geist Mono',monospace", textAlign: 'right', minWidth: 22 }}>
+              <span>{max}</span>
+              <span>{Math.round(max / 2)}</span>
+              <span>0</span>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <svg viewBox="0 0 600 158" preserveAspectRatio="none" style={{ width: '100%', height: 158, display: 'block' }}>
+                <defs>
+                  <linearGradient id="ccArea" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="#7B30B0" stopOpacity="0.18" />
+                    <stop offset="1" stopColor="#7B30B0" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <line x1="0" y1="14" x2="600" y2="14" stroke="#F2F0F6" />
+                <line x1="0" y1="79" x2="600" y2="79" stroke="#F2F0F6" />
+                <line x1="0" y1="144" x2="600" y2="144" stroke="#ECEAF1" />
+                <polygon points={lineArea} fill="url(#ccArea)" />
+                <polyline points={linePoints} fill="none" stroke="#7B30B0" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 10.5, color: '#A7A4B5', fontFamily: "'Geist Mono',monospace" }}>
+                {monthLabels.map((m, i) => <span key={i}>{m}</span>)}
+              </div>
+            </div>
           </div>
         </div>
 

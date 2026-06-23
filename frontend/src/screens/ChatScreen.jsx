@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../api.js'
-import { RANDOM_QUESTIONS } from '../content.js'
+import { pickQuestion } from '../content.js'
 import {
   IconStar, IconCheck, IconArrow, IconUp, IconThumbUp, IconThumbDown,
   IconInfo, IconAlert, IconShieldCheck,
@@ -74,7 +74,7 @@ function SourceCard({ s, active, onSelect, t }) {
   )
 }
 
-export default function ChatScreen({ t, lang, preset, presetKey }) {
+export default function ChatScreen({ t, lang, preset, presetKey, onShowPool }) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [ans, setAns] = useState(null)
@@ -85,22 +85,19 @@ export default function ChatScreen({ t, lang, preset, presetKey }) {
   const scrollRef = useRef(null)
   const lastQ = useRef(null)
 
-  function pickRandomQuestion() {
-    const pool = RANDOM_QUESTIONS[lang]
-    let pick = pool[Math.floor(Math.random() * pool.length)]
-    let guard = 0
-    while (pool.length > 1 && pick === lastQ.current && guard++ < 10) {
-      pick = pool[Math.floor(Math.random() * pool.length)]
-    }
-    lastQ.current = pick
-    return pick
+  function fillRandom(category) {
+    const q = pickQuestion(lang, category, lastQ.current)
+    lastQ.current = q
+    setInput(q)
   }
 
   async function submit(q) {
     const raw = (q ?? input).trim()
-    // Comando /chat: genera una domanda di esempio casuale, pronta da inviare.
-    if (q == null && raw.toLowerCase() === '/chat') {
-      setInput(pickRandomQuestion())
+    // Comandi slash: inseriscono una domanda di esempio (da inviare), niente attesa.
+    if (q == null && raw.toLowerCase().startsWith('/chat')) {
+      const arg = raw.slice(5).trim().toLowerCase()
+      const category = arg === 'low' ? 'low' : arg === 'guardrail' ? 'guardrail' : 'random'
+      fillRandom(category)
       return
     }
     const question = raw
@@ -118,11 +115,13 @@ export default function ChatScreen({ t, lang, preset, presetKey }) {
     }
   }
 
-  // Auto-ask della domanda preset quando si entra da una voce di menu demo.
+  // Ogni accesso a una schermata assistente parte pulito: nessuna attesa.
+  // Le voci "Confidenza bassa" / "Guardrail" preriempiono l'input (senza inviare).
   useEffect(() => {
-    if (preset) submit(preset)
+    setAns(null); setVerdict(null); setVote(null); setEscSent(false)
+    setInput(preset || '')
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [presetKey, lang])
+  }, [presetKey])
 
   async function doReview(kind) {
     setVerdict(kind)
@@ -149,9 +148,17 @@ export default function ChatScreen({ t, lang, preset, presetKey }) {
       <section style={{ display: 'flex', flexDirection: 'column', minWidth: 0, borderRight: '1px solid #ECEAF1' }}>
         <div ref={scrollRef} className="cc-scroll" style={{ flex: 1, overflowY: 'auto', padding: '30px 36px 16px', display: 'flex', flexDirection: 'column', gap: 22 }}>
           {!ans && !loading && (
-            <div style={{ margin: 'auto', textAlign: 'center', color: '#9A98A8', maxWidth: 380 }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: '#6B6B80', marginBottom: 6 }}>{t.askPrompt}</div>
-              <div style={{ fontSize: 13, lineHeight: 1.55 }}>{t.sourcesHint}</div>
+            <div style={{ margin: 'auto', textAlign: 'center', color: '#9A98A8', maxWidth: 420, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ width: 52, height: 52, borderRadius: 14, background: 'linear-gradient(135deg,#7B30B0,#5E2690)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 16px rgba(94,38,144,.28)', marginBottom: 16 }}>
+                <IconShieldCheck size={24} />
+              </div>
+              <div style={{ fontSize: 17, fontWeight: 600, color: '#1A1A2E', marginBottom: 8 }}>{t.askPrompt}</div>
+              <div style={{ fontSize: 13.5, lineHeight: 1.6, marginBottom: 16 }}>{t.emptySub}</div>
+              {onShowPool && (
+                <button onClick={onShowPool} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 15px', borderRadius: 9, border: '1px solid #E2D7F0', background: '#F7F2FB', color: '#5E2690', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                  <IconStar size={13} /> {t.seePool}
+                </button>
+              )}
             </div>
           )}
 
@@ -274,9 +281,12 @@ export default function ChatScreen({ t, lang, preset, presetKey }) {
               <IconArrow />
             </button>
           </div>
-          <div style={{ marginTop: 8, fontSize: 11.5, color: '#A7A4B5', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ marginTop: 8, fontSize: 11.5, color: '#A7A4B5', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
             <code style={{ fontFamily: "'Geist Mono',monospace", background: '#F2F0F6', color: '#6C2BA1', padding: '1px 6px', borderRadius: 5, fontSize: 11 }}>/chat</code>
-            {t.chatCmdHint.replace(/^[^:]*:\s*/, '')}
+            <span>{t.chatCmdHint}</span>
+            {onShowPool && (
+              <button onClick={onShowPool} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6C2BA1', fontSize: 11.5, fontWeight: 600, padding: 0, textDecoration: 'underline' }}>{t.seePool}</button>
+            )}
           </div>
         </div>
       </section>

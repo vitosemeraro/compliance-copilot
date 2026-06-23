@@ -8,7 +8,9 @@ import Onboarding from './components/Onboarding.jsx'
 import DocsModal from './components/DocsModal.jsx'
 import Architecture from './components/Architecture.jsx'
 import Gate from './components/Gate.jsx'
-import { STRINGS, SCREEN_META, DEMO_QUESTIONS } from './i18n.js'
+import PoolModal from './components/PoolModal.jsx'
+import { STRINGS, SCREEN_META } from './i18n.js'
+import { pickQuestion } from './content.js'
 import { api } from './api.js'
 
 const ASSISTANT = ['chat', 'escalation', 'guardrail']
@@ -23,8 +25,9 @@ export default function App() {
   const [screen, setScreen] = useState('chat')
   const [navTick, setNavTick] = useState(0)
   const [cfg, setCfg] = useState({ engine: 'fallback', model: null, mcp_tools: [], confidence_threshold: 60 })
-  const [modal, setModal] = useState(null) // 'onboarding' | 'docs' | 'arch' | null
+  const [modal, setModal] = useState(null) // 'onboarding' | 'docs' | 'arch' | 'pool' | null
   const [authed, setAuthed] = useState(null) // null = verifica in corso
+  const [injected, setInjected] = useState(null) // domanda inserita da pool/comando
 
   // Bootstrap: carica config e verifica se serve la password.
   useEffect(() => {
@@ -55,17 +58,34 @@ export default function App() {
   const meta = SCREEN_META[screen][lang]
 
   function onNav(next) {
+    setInjected(null) // navigazione manuale → chat pulita
     setScreen(next)
     if (ASSISTANT.includes(next)) setNavTick((n) => n + 1)
   }
 
-  const preset = ASSISTANT.includes(screen) ? DEMO_QUESTIONS[screen]?.[lang] : null
+  // Domanda scelta dal pannello "Domande demo": va in Chat, pronta da inviare.
+  function pickFromPool(q) {
+    setInjected(q)
+    setScreen('chat')
+    setNavTick((n) => n + 1)
+    setModal(null)
+  }
+
   const presetKey = `${screen}-${lang}-${navTick}`
+  // Cosa preriempire nell'input (mai inviata in automatico):
+  //  · domanda dal pool → quella; · "Confidenza bassa" → una low; · "Guardrail" → una guardrail; · Chat → vuoto.
+  const preset = useMemo(() => {
+    if (injected) return injected
+    if (screen === 'escalation') return pickQuestion(lang, 'low')
+    if (screen === 'guardrail') return pickQuestion(lang, 'guardrail')
+    return null
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presetKey])
 
   const content = useMemo(() => {
     if (screen === 'audit') return <AuditScreen t={t} />
     if (screen === 'dashboard') return <DashboardScreen t={t} lang={lang} />
-    return <ChatScreen t={t} lang={lang} preset={preset} presetKey={presetKey} />
+    return <ChatScreen t={t} lang={lang} preset={preset} presetKey={presetKey} onShowPool={() => setModal('pool')} />
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen, lang, presetKey])
 
@@ -91,6 +111,10 @@ export default function App() {
         }}>
           <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.demoData}</span>
           <div data-tour="footer" style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
+            <button onClick={() => setModal('pool')} style={footerBtn} title={t.poolTitle}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 3l1.9 4.6L19 9l-3.5 3.6L16.5 18 12 15.4 7.5 18l1-5.4L5 9l5.1-1.4L12 3z" stroke="#7A6A92" strokeWidth="1.6" strokeLinejoin="round" /></svg>
+              {t.poolTitle}
+            </button>
             <button onClick={() => setModal('docs')} style={footerBtn} title={t.footerDocs}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" stroke="#7A6A92" strokeWidth="1.7" strokeLinejoin="round" /><path d="M13 3v5h5" stroke="#7A6A92" strokeWidth="1.7" strokeLinejoin="round" /></svg>
               {t.footerDocs}
@@ -108,6 +132,7 @@ export default function App() {
       {modal === 'onboarding' && <Onboarding t={t} lang={lang} onClose={closeModal} />}
       {modal === 'docs' && <DocsModal t={t} lang={lang} onClose={closeModal} />}
       {modal === 'arch' && <Architecture t={t} lang={lang} onClose={closeModal} />}
+      {modal === 'pool' && <PoolModal t={t} lang={lang} onPick={pickFromPool} onClose={closeModal} />}
     </div>
   )
 }

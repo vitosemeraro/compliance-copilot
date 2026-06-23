@@ -3,6 +3,7 @@ import Modal from './Modal.jsx'
 const L = {
   it: {
     title: 'Architettura', flow: 'Flusso di una domanda',
+    request: 'domanda  ·  risposta',
     steps: [
       'L’utente invia la domanda dalla UI all’orchestratore.',
       'L’orchestratore interroga il vector store tramite il server MCP (retrieval reale, non simulato).',
@@ -12,14 +13,14 @@ const L = {
     ],
     fe: 'Frontend', feSub: 'React + Vite · 5 schermate',
     be: 'Orchestratore', beSub: 'FastAPI',
-    claude: 'Claude API', claudeSub: 'grounding',
-    mcp: 'MCP server “corpus”', mcpSub: 'stdio · search/get/list',
-    vec: 'Vector store', vecSub: 'Chroma · embedding locale',
+    retr: 'Retrieval via MCP', mcp: 'MCP server “corpus”', vec: 'Vector store Chroma',
+    claude: 'Claude API', claudeSub: 'grounding · citazioni',
     gov: 'Governance', govSub: 'confidenza · escalation · HITL · guardrail',
-    audit: 'Audit trail', auditSub: 'JSONL append-only · SHA-256',
+    audit: 'Audit trail', auditSub: 'append-only · SHA-256',
   },
   en: {
     title: 'Architecture', flow: 'How a question flows',
+    request: 'question  ·  answer',
     steps: [
       'The user sends the question from the UI to the orchestrator.',
       'The orchestrator queries the vector store via the MCP server (real retrieval, not simulated).',
@@ -29,38 +30,38 @@ const L = {
     ],
     fe: 'Frontend', feSub: 'React + Vite · 5 screens',
     be: 'Orchestrator', beSub: 'FastAPI',
-    claude: 'Claude API', claudeSub: 'grounding',
-    mcp: 'MCP server “corpus”', mcpSub: 'stdio · search/get/list',
-    vec: 'Vector store', vecSub: 'Chroma · local embedding',
+    retr: 'Retrieval via MCP', mcp: 'MCP server “corpus”', vec: 'Chroma vector store',
+    claude: 'Claude API', claudeSub: 'grounding · citations',
     gov: 'Governance', govSub: 'confidence · escalation · HITL · guardrail',
-    audit: 'Audit trail', auditSub: 'append-only JSONL · SHA-256',
+    audit: 'Audit trail', auditSub: 'append-only · SHA-256',
   },
 }
 
-function Box({ x, y, w, h, title, sub, fill, stroke, color, subColor, badge }) {
+function Badge({ n, color }) {
+  return <span style={{ width: 19, height: 19, borderRadius: '50%', background: color, color: '#fff', fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>{n}</span>
+}
+
+const card = (bg, border) => ({
+  background: bg, border: `1px solid ${border}`, borderRadius: 12, padding: '12px 14px',
+})
+
+function DownArrow({ label }) {
   return (
-    <g>
-      <rect x={x} y={y} width={w} height={h} rx="12" fill={fill} stroke={stroke} strokeWidth="1.5" />
-      {badge != null && (
-        <g>
-          <circle cx={x + 16} cy={y + 16} r="9" fill={color} />
-          <text x={x + 16} y={y + 19.5} textAnchor="middle" fontSize="11" fontWeight="700" fill="#fff">{badge}</text>
-        </g>
-      )}
-      <text x={x + w / 2} y={y + h / 2 - 2} textAnchor="middle" fontSize="13.5" fontWeight="600" fill={color}>{title}</text>
-      <text x={x + w / 2} y={y + h / 2 + 15} textAnchor="middle" fontSize="10.5" fill={subColor} fontFamily="'Geist Mono',monospace">{sub}</text>
-    </g>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, color: '#B7A6D0' }}>
+      {label && <span style={{ fontSize: 10.5, color: '#9A98A8', fontFamily: "'Geist Mono',monospace" }}>{label}</span>}
+      <svg width="16" height="20" viewBox="0 0 16 20" fill="none"><path d="M8 1v15m0 0l-5-5m5 5l5-5" stroke="#C9B6E0" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+    </div>
   )
 }
 
 export default function Architecture({ t, lang, onClose }) {
   const a = L[lang]
   return (
-    <Modal onClose={onClose} width={760}>
+    <Modal onClose={onClose} width={720}>
       <div style={{ padding: '20px 26px', borderBottom: '1px solid #ECEAF1', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
           <div style={{ width: 34, height: 34, borderRadius: 9, background: '#EFE7F7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 7h7v6H3V7zm11 0h7v10h-7V7zM3 17h7v0M7 13v4" stroke="#5E2690" strokeWidth="1.6" strokeLinejoin="round" /></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 7h7v6H3V7zm11 0h7v10h-7V7z" stroke="#5E2690" strokeWidth="1.6" strokeLinejoin="round" /></svg>
           </div>
           <div style={{ fontSize: 16, fontWeight: 600, color: '#1A1A2E' }}>{a.title}</div>
         </div>
@@ -69,36 +70,67 @@ export default function Architecture({ t, lang, onClose }) {
         </button>
       </div>
 
-      <div className="cc-scroll" style={{ overflowY: 'auto', padding: '18px 22px 24px' }}>
-        <svg viewBox="0 0 700 330" style={{ width: '100%', display: 'block' }}>
-          <defs>
-            <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
-              <path d="M0 0L8 4.5L0 9z" fill="#B7A6D0" />
-            </marker>
-          </defs>
+      <div className="cc-scroll" style={{ overflowY: 'auto', padding: '22px 26px 24px' }}>
+        {/* diagramma in HTML: i box si adattano al testo, niente overflow */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+          <div style={{ ...card('#FBFAFD', '#E2DEEA'), width: 280, textAlign: 'center' }}>
+            <div style={{ fontSize: 13.5, fontWeight: 600, color: '#1A1A2E' }}>{a.fe}</div>
+            <div style={{ fontSize: 11, color: '#9A98A8', fontFamily: "'Geist Mono',monospace", marginTop: 2 }}>{a.feSub}</div>
+          </div>
 
-          {/* connettori */}
-          <g stroke="#C9B6E0" strokeWidth="1.8" fill="none" markerEnd="url(#arr)">
-            <path d="M180 60 H250" />
-            <path d="M450 60 H520" />
-            <path d="M350 92 V150" />
-            <path d="M450 180 H520" />
-            <path d="M250 180 H180" />
-            <path d="M120 210 V250" />
-          </g>
+          <DownArrow label={a.request} />
 
-          <Box x={40} y={36} w={140} h={48} title={a.fe} sub={a.feSub} fill="#FBFAFD" stroke="#E2DEEA" color="#1A1A2E" subColor="#9A98A8" badge="1" />
-          <Box x={250} y={36} w={200} h={48} title={a.be} sub={a.beSub} fill="#EFE7F7" stroke="#C9B6E0" color="#5E2690" subColor="#9A7BBE" />
-          <Box x={520} y={36} w={150} h={48} title={a.claude} sub={a.claudeSub} fill="#DBEAFE" stroke="#A9C4F5" color="#1E50C8" subColor="#5E82CC" badge="3" />
+          <div style={{ ...card('#EFE7F7', '#C9B6E0'), width: 300, textAlign: 'center' }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#5E2690' }}>{a.be}</div>
+            <div style={{ fontSize: 11, color: '#9A7BBE', fontFamily: "'Geist Mono',monospace", marginTop: 2 }}>{a.beSub}</div>
+          </div>
 
-          <Box x={250} y={150} w={200} h={48} title={a.mcp} sub={a.mcpSub} fill="#fff" stroke="#C9B6E0" color="#5E2690" subColor="#9A7BBE" badge="2" />
-          <Box x={520} y={150} w={150} h={48} title={a.vec} sub={a.vecSub} fill="#FBFAFD" stroke="#E2DEEA" color="#1A1A2E" subColor="#9A98A8" />
+          <DownArrow />
 
-          <Box x={40} y={150} w={140} h={48} title={a.gov} sub={a.govSub} fill="#FFFBF0" stroke="#F4E6C2" color="#92500A" subColor="#B08A4A" badge="4" />
-          <Box x={40} y={250} w={200} h={48} title={a.audit} sub={a.auditSub} fill="#2A2140" stroke="#2E2747" color="#fff" subColor="#A99FC4" badge="5" />
-        </svg>
+          {/* dipendenze dell'orchestratore */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 10, width: '100%' }}>
+            {/* retrieval via MCP → Chroma */}
+            <div style={card('#fff', '#C9B6E0')}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
+                <Badge n="2" color="#5E2690" />
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: '#5E2690' }}>{a.retr}</span>
+              </div>
+              <div style={{ fontSize: 11.5, color: '#3A3A4A', background: '#FBFAFD', border: '1px solid #EEE9F4', borderRadius: 8, padding: '6px 9px', marginBottom: 5 }}>{a.mcp}</div>
+              <div style={{ textAlign: 'center', color: '#C9B6E0', fontSize: 12, lineHeight: 1 }}>↓</div>
+              <div style={{ fontSize: 11.5, color: '#3A3A4A', background: '#FBFAFD', border: '1px solid #EEE9F4', borderRadius: 8, padding: '6px 9px', marginTop: 5 }}>{a.vec}</div>
+            </div>
 
-        <div style={{ marginTop: 14 }}>
+            {/* Claude */}
+            <div style={card('#DBEAFE', '#A9C4F5')}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
+                <Badge n="3" color="#1E50C8" />
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: '#1E50C8' }}>{a.claude}</span>
+              </div>
+              <div style={{ fontSize: 11.5, color: '#3A5BA0', lineHeight: 1.5 }}>{a.claudeSub}</div>
+            </div>
+
+            {/* Governance */}
+            <div style={card('#FFFBF0', '#F4E6C2')}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
+                <Badge n="4" color="#B45309" />
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: '#92500A' }}>{a.gov}</span>
+              </div>
+              <div style={{ fontSize: 11.5, color: '#8A6516', lineHeight: 1.5 }}>{a.govSub}</div>
+            </div>
+
+            {/* Audit */}
+            <div style={card('#2A2140', '#2E2747')}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
+                <Badge n="5" color="#7B4FB0" />
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: '#fff' }}>{a.audit}</span>
+              </div>
+              <div style={{ fontSize: 11.5, color: '#A99FC4', lineHeight: 1.5 }}>{a.auditSub}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* flusso numerato */}
+        <div style={{ marginTop: 22 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: '#5E2690', marginBottom: 10 }}>{a.flow}</div>
           {a.steps.map((s, i) => (
             <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 8 }}>
