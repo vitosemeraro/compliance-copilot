@@ -54,6 +54,8 @@ export const api = {
     jget(`/audit?search=${encodeURIComponent(search)}&outcome=${encodeURIComponent(outcome)}&guardrail=${encodeURIComponent(guardrail)}`),
   dashboard: () => jget('/dashboard'),
   adoption: () => jget('/adoption'),
+  palo: () => jget('/palo'),
+  paloSet: (key, value, note = '') => jpost('/palo/field', { key, value, note }),
   interaction: (id) => jget('/interaction/' + encodeURIComponent(id)),
   download: downloadExport,
   setPassword,

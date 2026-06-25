@@ -23,3 +23,10 @@ class FeedbackRequest(BaseModel):
     interaction_id: str
     vote: Literal["up", "down"]
     comment: str = ""
+
+
+class PaloFieldRequest(BaseModel):
+    key: str
+    value: bool | str | float
+    note: str = ""
+    by: str = ""

@@ -3,7 +3,15 @@ export const STRINGS = {
   it: {
     eyebrow: 'PRIMA · COMPLIANCE', groupAssistant: 'ASSISTENTE', groupGovernance: 'GOVERNANCE',
     navChat: 'Chat con fonti', navEscalation: 'Confidenza bassa', navGuardrail: 'Guardrail pricing',
-    navAudit: 'Audit trail', navReview: 'Coda di revisione', navDashboard: 'KPI di business', navAdoption: 'Adoption-health',
+    navAudit: 'Audit trail', navReview: 'Coda di revisione', navDashboard: 'KPI di business', navAdoption: 'Adoption-health', navPalo: 'PALO Readiness',
+    paloPrinciple: 'Il punteggio supporta il giudizio umano, non lo sostituisce: gli indicatori oggettivi sono automatici, quelli di giudizio restano umani.',
+    paloProvisional: 'Provvisorio', paloComplete: 'Validato', paloPending: 'validazioni umane mancanti',
+    paloAuto: 'auto', paloManual: 'umano', paloValidatedBy: 'validato da', paloAwaiting: 'in attesa di validazione umana',
+    paloDimensions: 'Dimensioni PALO', paloFrameworks: 'Framework alignment', paloFieldsTitle: 'Validazioni umane (HITL)',
+    paloRecs: 'Raccomandazioni', paloTrend: 'Andamento readiness', paloExport: 'Esporta JSON', paloValidate: 'Valida',
+    paloNote: 'Nota / rationale', paloYes: 'Sì', paloNo: 'No', paloPlaceholder: 'placeholder',
+    paloGate: { go: 'Go', conditional: 'Condizionato', nogo: 'No-Go' },
+    paloTier: { minimal: 'Minimo', limited: 'Limitato', high: 'Alto', unacceptable: 'Inaccettabile' },
     reviewEmpty: 'Nessuna risposta in attesa di revisione. Tutto validato. ✅',
     reviewCount: 'in attesa di revisione esperta', reviewOpen: 'Apri e valida', reviewIntro: 'Risposte a confidenza bassa o segnalate, da validare da un esperto Compliance.',
     reviewGuardrailTag: 'guardrail',
@@ -63,7 +71,15 @@ export const STRINGS = {
   en: {
     eyebrow: 'PRIMA · COMPLIANCE', groupAssistant: 'ASSISTANT', groupGovernance: 'GOVERNANCE',
     navChat: 'Chat with sources', navEscalation: 'Low confidence', navGuardrail: 'Pricing guardrail',
-    navAudit: 'Audit trail', navReview: 'Review queue', navDashboard: 'Business KPIs', navAdoption: 'Adoption health',
+    navAudit: 'Audit trail', navReview: 'Review queue', navDashboard: 'Business KPIs', navAdoption: 'Adoption health', navPalo: 'PALO Readiness',
+    paloPrinciple: 'The score supports human judgement, it doesn’t replace it: objective indicators are automatic, judgement ones stay human.',
+    paloProvisional: 'Provisional', paloComplete: 'Validated', paloPending: 'human validations missing',
+    paloAuto: 'auto', paloManual: 'human', paloValidatedBy: 'validated by', paloAwaiting: 'awaiting human validation',
+    paloDimensions: 'PALO dimensions', paloFrameworks: 'Framework alignment', paloFieldsTitle: 'Human validations (HITL)',
+    paloRecs: 'Recommendations', paloTrend: 'Readiness over time', paloExport: 'Export JSON', paloValidate: 'Validate',
+    paloNote: 'Note / rationale', paloYes: 'Yes', paloNo: 'No', paloPlaceholder: 'placeholder',
+    paloGate: { go: 'Go', conditional: 'Conditional', nogo: 'No-Go' },
+    paloTier: { minimal: 'Minimal', limited: 'Limited', high: 'High', unacceptable: 'Unacceptable' },
     reviewEmpty: 'No answers awaiting review. All validated. ✅',
     reviewCount: 'awaiting expert review', reviewOpen: 'Open & validate', reviewIntro: 'Low-confidence or flagged answers, to be validated by a Compliance expert.',
     reviewGuardrailTag: 'guardrail',
@@ -166,5 +182,9 @@ export const SCREEN_META = {
   adoption: {
     it: ['Adoption-health', 'Adozione nel tempo: utenti attivi, retention e dove si bloccano.'],
     en: ['Adoption health', 'Adoption over time: active users, retention and where users get stuck.'],
+  },
+  palo: {
+    it: ['PALO Readiness', 'Trustworthiness del tool: indicatori automatici + validazioni umane (ISO 42001/42005, EU AI Act, NIST).'],
+    en: ['PALO Readiness', 'Tool trustworthiness: automatic indicators + human validations (ISO 42001/42005, EU AI Act, NIST).'],
   },
 }

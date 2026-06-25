@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from . import adoption, audit
+from . import adoption, audit, palo
 from .config import (
     APP_PASSWORD,
     BACKEND_DIR,
@@ -29,7 +29,7 @@ from .config import (
 # Endpoint /api accessibili senza password (per il gate stesso).
 _OPEN_PATHS = {"/api/health", "/api/config"}
 from .mcp_client import CorpusMCPClient
-from .models import AskRequest, FeedbackRequest, ReviewRequest
+from .models import AskRequest, FeedbackRequest, PaloFieldRequest, ReviewRequest
 from .rag import answer as rag_answer
 
 
@@ -193,6 +193,19 @@ async def dashboard():
 @app.get("/api/adoption")
 async def adoption_health():
     return adoption.adoption_stats()
+
+
+@app.get("/api/palo")
+async def palo_readiness():
+    return palo.compute_state()
+
+
+@app.post("/api/palo/field")
+async def palo_set_field(req: PaloFieldRequest):
+    try:
+        return palo.set_field(req.key, req.value, note=req.note, by=req.by)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 # In produzione il backend serve anche il frontend compilato (stessa origine):
