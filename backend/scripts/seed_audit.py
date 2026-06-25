@@ -111,6 +111,28 @@ def seed() -> None:
                 guardrail=False, sources=[], engine="seed", ts=_iso(ts),
             )
 
+    # 2.5) Interazioni con guardrail anti-discriminazione attivo (variabili sensibili).
+    guardrail_qs = [
+        ("Possiamo usare il CAP di residenza come variabile per il pricing RC Auto?", 79, "validata"),
+        ("Possiamo usare il genere dell'assicurato come fattore tariffario?", 58, "rev"),
+        ("La nazionalità può essere usata come variabile nel pricing?", 52, "scarta"),
+        ("Possiamo usare il quartiere di residenza per differenziare il premio?", 63, "correggi"),
+        ("L'origine etnica può incidere sulla tariffa?", 41, "rev"),
+        ("Possiamo usare l'area di residenza come proxy di rischio?", 74, "validata"),
+    ]
+    for q, conf, out in guardrail_qs:
+        ts = NOW - timedelta(days=random.randint(1, 90), hours=random.randint(0, 9))
+        user, lang = random.choice(USERS)
+        needs_review = out == "rev"
+        iid = audit.log_interaction(
+            user=user, question=q, lang=lang, confidence=conf,
+            grounded=conf >= 40, needs_review=needs_review, out_of_corpus=False,
+            guardrail=True, sources=_mk_sources(random.randint(2, 4)), engine="seed", ts=_iso(ts),
+            guardrail_terms=["cap"],
+        )
+        if out in {"validata", "correggi", "scarta"}:
+            audit.log_review(interaction_id=iid, outcome=out, user=user, ts=_iso(ts + timedelta(minutes=14)))
+
     # 3) Le 7 righe recenti del design (in coda → più recenti).
     for ts, user, q, src, conf, out, guardrail in reversed(RECENT):
         needs_review = out == "rev"

@@ -1,4 +1,4 @@
-import { IconChat, IconAlert, IconShield, IconAudit, IconDash, IconAdoption, IconCheck } from './icons.jsx'
+import { IconChat, IconAlert, IconAudit, IconDash, IconAdoption, IconCheck } from './icons.jsx'
 
 const navStyle = (active) => ({
   display: 'flex', alignItems: 'center', gap: 11, width: '100%', padding: '9px 12px',
@@ -43,12 +43,11 @@ export default function Sidebar({ t, screen, onNav }) {
       <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.1em', color: '#A7A4B5', padding: '6px 10px 8px' }}>{t.groupAssistant}</div>
       <div data-tour="nav-assistant" style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <NavBtn active={screen === 'chat'} onClick={() => onNav('chat')} icon={IconChat} label={t.navChat} />
-        <NavBtn active={screen === 'escalation'} onClick={() => onNav('escalation')} icon={IconAlert} label={t.navEscalation} />
-        <NavBtn active={screen === 'guardrail'} onClick={() => onNav('guardrail')} icon={IconShield} label={t.navGuardrail} />
       </div>
 
       <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.1em', color: '#A7A4B5', padding: '18px 10px 8px' }}>{t.groupGovernance}</div>
       <div data-tour="nav-governance" style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <NavBtn active={screen === 'review'} onClick={() => onNav('review')} icon={IconAlert} label={t.navReview} />
         <NavBtn active={screen === 'audit'} onClick={() => onNav('audit')} icon={IconAudit} label={t.navAudit} />
         <NavBtn active={screen === 'dashboard'} onClick={() => onNav('dashboard')} icon={IconDash} label={t.navDashboard} />
         <NavBtn active={screen === 'adoption'} onClick={() => onNav('adoption')} icon={IconAdoption} label={t.navAdoption} />

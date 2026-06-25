@@ -5,16 +5,16 @@ import ChatScreen from './screens/ChatScreen.jsx'
 import AuditScreen from './screens/AuditScreen.jsx'
 import DashboardScreen from './screens/DashboardScreen.jsx'
 import AdoptionScreen from './screens/AdoptionScreen.jsx'
+import ReviewQueueScreen from './screens/ReviewQueueScreen.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import DocsModal from './components/DocsModal.jsx'
 import Architecture from './components/Architecture.jsx'
 import Gate from './components/Gate.jsx'
 import PoolModal from './components/PoolModal.jsx'
 import { STRINGS, SCREEN_META } from './i18n.js'
-import { pickQuestion } from './content.js'
 import { api } from './api.js'
 
-const ASSISTANT = ['chat', 'escalation', 'guardrail']
+const ASSISTANT = ['chat']
 const THREAD_KEY = 'cc_thread'
 
 // Normalizza un'interazione dell'audit nello stesso formato di una risposta /ask,
@@ -129,18 +129,13 @@ export default function App() {
   const presetKey = `${screen}-${lang}-${navTick}`
   // Cosa preriempire nell'input (mai inviata in automatico):
   //  · domanda dal pool → quella; · "Confidenza bassa" → una low; · "Guardrail" → una guardrail; · Chat → vuoto.
-  const preset = useMemo(() => {
-    if (injected) return injected
-    if (screen === 'escalation') return pickQuestion(lang, 'low')
-    if (screen === 'guardrail') return pickQuestion(lang, 'guardrail')
-    return null
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [presetKey])
+  const preset = useMemo(() => injected || null, [presetKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   let content
   if (screen === 'audit') content = <AuditScreen t={t} onOpenInteraction={onOpenInteraction} />
   else if (screen === 'dashboard') content = <DashboardScreen t={t} lang={lang} />
   else if (screen === 'adoption') content = <AdoptionScreen t={t} lang={lang} />
+  else if (screen === 'review') content = <ReviewQueueScreen t={t} onOpenInteraction={onOpenInteraction} />
   else content = (
     <ChatScreen
       t={t} lang={lang} preset={preset} presetKey={presetKey}

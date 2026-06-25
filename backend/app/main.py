@@ -129,6 +129,7 @@ async def feedback(req: FeedbackRequest):
 async def get_audit(
     search: str = "",
     outcome: str = Query("", description="validata|correggi|scarta|rev"),
+    guardrail: str = Query("", description="1 = solo interazioni con guardrail attivo"),
 ):
     rows = audit.rows_light()
     total = len(rows)
@@ -140,6 +141,8 @@ async def get_audit(
             rows = [r for r in rows if r["needs_review"] and not r["outcome"]]
         else:
             rows = [r for r in rows if r["outcome"] == outcome]
+    if guardrail == "1":
+        rows = [r for r in rows if r.get("guardrail")]
     return {
         "rows": rows,
         "count": len(rows),

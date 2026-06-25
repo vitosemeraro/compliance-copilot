@@ -3,7 +3,10 @@ export const STRINGS = {
   it: {
     eyebrow: 'PRIMA · COMPLIANCE', groupAssistant: 'ASSISTENTE', groupGovernance: 'GOVERNANCE',
     navChat: 'Chat con fonti', navEscalation: 'Confidenza bassa', navGuardrail: 'Guardrail pricing',
-    navAudit: 'Audit trail', navDashboard: 'KPI di business', navAdoption: 'Adoption-health',
+    navAudit: 'Audit trail', navReview: 'Coda di revisione', navDashboard: 'KPI di business', navAdoption: 'Adoption-health',
+    reviewEmpty: 'Nessuna risposta in attesa di revisione. Tutto validato. ✅',
+    reviewCount: 'in attesa di revisione esperta', reviewOpen: 'Apri e valida', reviewIntro: 'Risposte a confidenza bassa o segnalate, da validare da un esperto Compliance.',
+    reviewGuardrailTag: 'guardrail',
     aiBadge: 'Bozza assistita da AI — da validare', confidence: 'Confidenza', needsReview: 'richiede revisione',
     humanLabel: 'VALIDAZIONE', btnValida: 'Valida', btnCorreggi: 'Da correggere', btnScarta: 'Scarta',
     sourcesTitle: 'Fonti', inputPlaceholder: 'Chiedi qualcosa sulla normativa o sulle policy…',
@@ -60,7 +63,10 @@ export const STRINGS = {
   en: {
     eyebrow: 'PRIMA · COMPLIANCE', groupAssistant: 'ASSISTANT', groupGovernance: 'GOVERNANCE',
     navChat: 'Chat with sources', navEscalation: 'Low confidence', navGuardrail: 'Pricing guardrail',
-    navAudit: 'Audit trail', navDashboard: 'Business KPIs', navAdoption: 'Adoption health',
+    navAudit: 'Audit trail', navReview: 'Review queue', navDashboard: 'Business KPIs', navAdoption: 'Adoption health',
+    reviewEmpty: 'No answers awaiting review. All validated. ✅',
+    reviewCount: 'awaiting expert review', reviewOpen: 'Open & validate', reviewIntro: 'Low-confidence or flagged answers, to be validated by a Compliance expert.',
+    reviewGuardrailTag: 'guardrail',
     aiBadge: 'AI-assisted draft — to be validated', confidence: 'Confidence', needsReview: 'needs review',
     humanLabel: 'VALIDATION', btnValida: 'Validate', btnCorreggi: 'Needs fixing', btnScarta: 'Discard',
     sourcesTitle: 'Sources', inputPlaceholder: 'Ask something about regulation or policy…',
@@ -144,6 +150,10 @@ export const SCREEN_META = {
   guardrail: {
     it: ['Guardrail pricing', 'Protezione anti-discriminazione sulle variabili sensibili.'],
     en: ['Pricing guardrail', 'Anti-discrimination protection on sensitive variables.'],
+  },
+  review: {
+    it: ['Coda di revisione', 'Le risposte che aspettano la validazione di un esperto.'],
+    en: ['Review queue', 'Answers awaiting an expert’s validation.'],
   },
   audit: {
     it: ['Audit trail', 'Registro completo e tracciabile di ogni interazione.'],

@@ -50,8 +50,8 @@ export const api = {
   ask: (question, lang, user = 'Giulia Bianchi') => jpost('/ask', { question, lang, user }),
   review: (interaction_id, outcome, note = '') => jpost('/review', { interaction_id, outcome, note }),
   feedback: (interaction_id, vote) => jpost('/feedback', { interaction_id, vote }),
-  audit: (search = '', outcome = '') =>
-    jget(`/audit?search=${encodeURIComponent(search)}&outcome=${encodeURIComponent(outcome)}`),
+  audit: (search = '', outcome = '', guardrail = '') =>
+    jget(`/audit?search=${encodeURIComponent(search)}&outcome=${encodeURIComponent(outcome)}&guardrail=${encodeURIComponent(guardrail)}`),
   dashboard: () => jget('/dashboard'),
   adoption: () => jget('/adoption'),
   interaction: (id) => jget('/interaction/' + encodeURIComponent(id)),

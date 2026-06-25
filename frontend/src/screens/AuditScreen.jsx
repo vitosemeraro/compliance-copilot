@@ -39,11 +39,12 @@ export default function AuditScreen({ t, onOpenInteraction }) {
   const [data, setData] = useState({ rows: [], count: 0, total: 0, chain_valid: true })
   const [search, setSearch] = useState('')
   const [outcome, setOutcome] = useState('')
+  const [guardrailOnly, setGuardrailOnly] = useState(false)
 
   useEffect(() => {
-    const id = setTimeout(() => { api.audit(search, outcome).then(setData).catch(() => {}) }, 200)
+    const id = setTimeout(() => { api.audit(search, outcome, guardrailOnly ? '1' : '').then(setData).catch(() => {}) }, 200)
     return () => clearTimeout(id)
-  }, [search, outcome])
+  }, [search, outcome, guardrailOnly])
 
   const outcomes = [
     { key: '', label: t.auditOutcome },
@@ -64,6 +65,7 @@ export default function AuditScreen({ t, onOpenInteraction }) {
           {outcomes.map((o) => (
             <div key={o.key} onClick={() => setOutcome(o.key)} style={chipFilter(outcome === o.key)}>{o.label}</div>
           ))}
+          <div onClick={() => setGuardrailOnly((v) => !v)} style={chipFilter(guardrailOnly)}>🛡️ {t.navGuardrail}</div>
         </div>
         <div style={{ display: 'flex', gap: 9 }}>
           <button onClick={() => api.download('csv')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg,#7B30B0,#5E2690)', color: '#fff', fontSize: 13.5, fontWeight: 600, boxShadow: '0 3px 10px rgba(94,38,144,.28)' }}>
